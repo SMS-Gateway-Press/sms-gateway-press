@@ -10,13 +10,13 @@ require_once __DIR__.'/class-sms-gateway-press.php';
 
 abstract class Main
 {
-    public const DATETIME_LOCAL_FORMAT = 'Y-m-d\TH:i';
+	public const DATETIME_LOCAL_FORMAT = 'Y-m-d\TH:i';
 
-    public static function run(): void
-    {
-        Custom_Post_Type\Device::register();
-        Custom_Post_Type\Sms::register();
+	public static function run(): void
+	{
+		Custom_Post_Type\Device::register();
+		Custom_Post_Type\Sms::register();
 
-        Rest_Api::register_endpoints();
-    }
+		Rest_Api::register_endpoints();
+	}
 }
