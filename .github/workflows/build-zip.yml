@@ -15,5 +15,5 @@ jobs:
 
     - name: Generate zip
       uses: 10up/action-wordpress-plugin-build-zip@stable
-      env:
-        SLUG: sms-gateway-press
+    #   env:
+    #     SLUG: sms-gateway-press
