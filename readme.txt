@@ -4,7 +4,7 @@ Donate link: https://tppay.me/lnq34pqn
 Tags: sms, smsgateway
 Requires at least: 6.0
 Tested up to: 6.3
-Stable tag: 1.0.0
+Stable tag: 0.2.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,10 +34,6 @@ Features:
 4. Open the installed app and press the "Edit Credentials" button. Then press "Scan QR" and focus on the QR of the device. Once the scan has been completed satisfactorily, you can press the "Test Connection" button to test the connection. If successful, it will indicate below the device's QR that it has already been connected. Then press "Save". Then press "Connect" in the app and some information about the recent connection activity will be displayed below.
 
 == Frequently Asked Questions ==
-
-= Where to get the Android app? =
-
-The Android app may be downloaded from: https://www.sms-gateway-press.com/download
 
 = How to send SMS manually? =
 
