@@ -8,63 +8,79 @@ use WP_Post;
 use WP_REST_Request;
 use SMS_Gateway_Press;
 
-abstract class Rest_Api
-{
+abstract class Rest_Api {
+
 	const ROUTE_NAMESPACE = 'sms-gateway-press/v1';
 
-	public static function register_endpoints(): void
-	{
+	public static function register_endpoints(): void {
 		add_action( 'rest_api_init', array( __CLASS__, 'rest_api_init' ) );
 	}
 
-	public static function rest_api_init(): void
-	{
-		register_rest_route( self::ROUTE_NAMESPACE, '/device-actions', array(
-			'methods'             => 'GET',
-			'callback'            => array( __CLASS__, 'get_device_actions' ),
-			'permission_callback' => array( __CLASS__, 'check_device_auth' ),
-		) );
+	public static function rest_api_init(): void {
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/device-actions',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_device_actions' ),
+				'permission_callback' => array( __CLASS__, 'check_device_auth' ),
+			)
+		);
 
-		register_rest_route( self::ROUTE_NAMESPACE, '/device-auth', array(
-			'methods'             => 'POST',
-			'callback'            => array( __CLASS__, 'device_auth' ),
-			'permission_callback' => array( __CLASS__, 'check_device_auth' ),
-		) );
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/device-auth',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'device_auth' ),
+				'permission_callback' => array( __CLASS__, 'check_device_auth' ),
+			)
+		);
 
-		register_rest_route( self::ROUTE_NAMESPACE, '/update-sms', array(
-			'methods'             => 'PUT',
-			'callback'            => array( __CLASS__, 'update_sms' ),
-			'permission_callback' => array( __CLASS__, 'check_device_auth' ),
-		) );
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/update-sms',
+			array(
+				'methods'             => 'PUT',
+				'callback'            => array( __CLASS__, 'update_sms' ),
+				'permission_callback' => array( __CLASS__, 'check_device_auth' ),
+			)
+		);
 
-		register_rest_route( self::ROUTE_NAMESPACE, '/sms/(?P<id>\d+)', array(
-			'methods'  => 'GET',
-			'callback' => array( __CLASS__, 'get_sms' ),
-			'args'     => array(
-				'id' => array(
-					'validate_callback' => function( $param, $request, $key ) {
-						return is_numeric( $param );
-					}
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/sms/(?P<id>\d+)',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_sms' ),
+				'args'                => array(
+					'id' => array(
+						'validate_callback' => function ( $param, $request, $key ) {
+							return is_numeric( $param );
+						},
+					),
 				),
-			),
-			'permission_callback' => array( __CLASS__, 'check_user' ),
-		) );
+				'permission_callback' => array( __CLASS__, 'check_user' ),
+			)
+		);
 
-		register_rest_route( self::ROUTE_NAMESPACE, '/send', array(
-			'methods'  => 'POST',
-			'callback' => array( __CLASS__, 'send_sms' ),
-			'permission_callback' => array( __CLASS__, 'check_user' ),
-		) );
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			'/send',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'send_sms' ),
+				'permission_callback' => array( __CLASS__, 'check_user' ),
+			)
+		);
 	}
 
-	public static function check_user(): bool
-	{
+	public static function check_user(): bool {
 		return current_user_can( 'manage_options' );
 	}
 
-	public static function get_sms( WP_REST_Request $request ): void
-	{
-		$post_id = $request['id'];
+	public static function get_sms( WP_REST_Request $request ): void {
+		$post_id  = $request['id'];
 		$sms_info = Sms::get_sms_info( $post_id );
 
 		if ( ! $sms_info ) {
@@ -76,14 +92,13 @@ abstract class Rest_Api
 		wp_die();
 	}
 
-	public static function send_sms( WP_REST_Request $request ): void
-	{
+	public static function send_sms( WP_REST_Request $request ): void {
 		$phone_number = $request->get_param( 'phone_number' );
-		$text = $request->get_param( 'text' );
+		$text         = $request->get_param( 'text' );
 
 		$post_id = SMS_Gateway_Press::send( $phone_number, $text );
 
-		sleep(2);
+		sleep( 2 );
 
 		$sms_info = Sms::get_sms_info( $post_id );
 
@@ -91,9 +106,8 @@ abstract class Rest_Api
 		wp_die();
 	}
 
-	public static function check_device_auth( WP_REST_Request $request ): bool
-	{
-		$device_id = $request->get_header( 'X-Device-Id' );
+	public static function check_device_auth( WP_REST_Request $request ): bool {
+		$device_id    = $request->get_header( 'X-Device-Id' );
 		$device_token = $request->get_header( 'X-Device-Token' );
 
 		if ( ! is_numeric( $device_id ) || ! $device_token ) {
@@ -103,7 +117,7 @@ abstract class Rest_Api
 		$device_post = get_post( $device_id );
 
 		if ( ! $device_post instanceof WP_Post ||
-			 Device::POST_TYPE != $device_post->post_type
+			Device::POST_TYPE != $device_post->post_type
 		) {
 			return false;
 		}
@@ -118,14 +132,12 @@ abstract class Rest_Api
 		return true;
 	}
 
-	public static function device_auth(): void
-	{
+	public static function device_auth(): void {
 		wp_send_json_success();
 		wp_die();
 	}
 
-	public static function get_device_actions( WP_REST_Request $request ): void
-	{
+	public static function get_device_actions( WP_REST_Request $request ): void {
 		$request_time       = $_SERVER['REQUEST_TIME'];
 		$max_execution_time = ini_get( 'max_execution_time' );
 		$request_time_limit = $request_time + $max_execution_time;
@@ -136,7 +148,7 @@ abstract class Rest_Api
 
 		// start the long polling.
 		while ( time() <= $polling_time_limit ) {
-			if (connection_aborted()) {
+			if ( connection_aborted() ) {
 				exit;
 			}
 
@@ -144,67 +156,69 @@ abstract class Rest_Api
 
 			update_post_meta( $device_id, Device::META_KEY_LAST_ACTIVITY_AT, $now );
 
-			$sms_posts = get_posts( array(
-				'post_type'   => Sms::POST_TYPE,
-				'numberposts' => 1,
-				'meta_query'  => array(
-					'relation' => 'AND',
-					array(
-						'key'     => Sms::META_KEY_SEND_AT,
-						'compare' => '<=',
-						'value'   => $now,
-						'type'    => 'NUMERIC'
-					),
-					array(
-						'key'     => Sms::META_KEY_EXPIRES_AT,
-						'compare' => '>',
-						'value'   => $now,
-						'type'    => 'NUMERIC'
-					),
-					array(
-						'key'     => Sms::META_KEY_SENT_AT,
-						'compare' => 'NOT EXISTS',
-					),
-					array(
-						'relation' => 'OR',
+			$sms_posts = get_posts(
+				array(
+					'post_type'   => Sms::POST_TYPE,
+					'numberposts' => 1,
+					'meta_query'  => array(
+						'relation' => 'AND',
 						array(
-							'key'     => Sms::META_KEY_INACTIVE_AT,
-							'compare' => 'NOT EXISTS',
-						),
-						array(
-							'key'     => Sms::META_KEY_INACTIVE_AT,
-							'compare' => '<',
+							'key'     => Sms::META_KEY_SEND_AT,
+							'compare' => '<=',
 							'value'   => $now,
-							'type'    => 'NUMERIC'
+							'type'    => 'NUMERIC',
 						),
-					),
-					array(
-						'relation' => 'OR',
 						array(
-							'key'     => Sms::META_KEY_SENDING_IN_DEVICE,
+							'key'     => Sms::META_KEY_EXPIRES_AT,
+							'compare' => '>',
+							'value'   => $now,
+							'type'    => 'NUMERIC',
+						),
+						array(
+							'key'     => Sms::META_KEY_SENT_AT,
 							'compare' => 'NOT EXISTS',
 						),
 						array(
-							'key'     => Sms::META_KEY_INACTIVE_AT,
-							'compare' => 'NOT EQUAL',
-							'value'   => $device_id,
-							'type'    => 'NUMERIC'
+							'relation' => 'OR',
+							array(
+								'key'     => Sms::META_KEY_INACTIVE_AT,
+								'compare' => 'NOT EXISTS',
+							),
+							array(
+								'key'     => Sms::META_KEY_INACTIVE_AT,
+								'compare' => '<',
+								'value'   => $now,
+								'type'    => 'NUMERIC',
+							),
+						),
+						array(
+							'relation' => 'OR',
+							array(
+								'key'     => Sms::META_KEY_SENDING_IN_DEVICE,
+								'compare' => 'NOT EXISTS',
+							),
+							array(
+								'key'     => Sms::META_KEY_INACTIVE_AT,
+								'compare' => 'NOT EQUAL',
+								'value'   => $device_id,
+								'type'    => 'NUMERIC',
+							),
 						),
 					),
-				),
-			) );
+				)
+			);
 
 			if ( ! count( $sms_posts ) ) {
 				sleep( 1 );
 				continue;
 			}
 
-			$sms_post = $sms_posts[0];
+			$sms_post    = $sms_posts[0];
 			$inactive_at = get_post_meta( $sms_post->ID, Sms::META_KEY_INACTIVE_AT, true );
 
 			if ( is_numeric( $inactive_at ) &&
-				 $inactive_at > 0 &&
-				 $now > $inactive_at
+				$inactive_at > 0 &&
+				$now > $inactive_at
 			) {
 				$sending_in_device = get_post_meta( $sms_post->ID, Sms::META_KEY_SENDING_IN_DEVICE, true );
 
@@ -252,16 +266,15 @@ abstract class Rest_Api
 		wp_die();
 	}
 
-	public static function update_sms( WP_REST_Request $request ): void
-	{
+	public static function update_sms( WP_REST_Request $request ): void {
 		if ( ! $request->has_param( 'sms_id' ) ||
-			 ! $request->has_param( 'sms_token' )
+			! $request->has_param( 'sms_token' )
 		) {
 			wp_send_json_error( null, 400 );
 			wp_die();
 		}
 
-		$sms_id = $request->get_param( 'sms_id' );
+		$sms_id   = $request->get_param( 'sms_id' );
 		$sms_post = get_post( $sms_id );
 
 		if ( ! $sms_post || Sms::POST_TYPE != $sms_post->post_type ) {
@@ -276,9 +289,9 @@ abstract class Rest_Api
 			wp_die();
 		}
 
-		$device_id = $request->get_header( 'X-Device-Id' );
+		$device_id  = $request->get_header( 'X-Device-Id' );
 		$expires_at = get_post_meta( $sms_id, Sms::META_KEY_EXPIRES_AT, true );
-		$now = time();
+		$now        = time();
 
 		if ( $now > $expires_at ) {
 			wp_send_json_error( null, 403 );

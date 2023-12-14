@@ -12,7 +12,7 @@
  * Text Domain:  sms_gateway_press
  */
 
-require_once __DIR__.'/private/class-main.php';
+require_once __DIR__ . '/private/class-main.php';
 
 define( 'SMS_GATEWAY_PRESS_URL', plugin_dir_url( __FILE__ ) );
 
