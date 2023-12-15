@@ -6,8 +6,9 @@ use DateTime;
 
 abstract class Device {
 
-	public const POST_TYPE     = 'smsgp_device';
-	public const COLUMN_STATUS = 'status';
+	public const POST_TYPE            = 'smsgp_device';
+	public const COLUMN_STATUS        = 'status';
+	public const NONCE_ACTION_METABOX = 'nonce_metabox';
 
 	public const META_KEY_TOKEN            = '_token';
 	public const META_KEY_PHONE_NUMBER     = '_phone_number';
@@ -46,16 +47,15 @@ abstract class Device {
 	}
 
 	public static function admin_enqueue_scripts( string $page ): void {
-		if ( 'edit.php' != $page
-			|| ! isset( $_GET['post_type'] )
-			|| self::POST_TYPE != $_GET['post_type']
-		) {
+		global $post_type;
+
+		if ( 'edit.php' !== $page || self::POST_TYPE !== $post_type ) {
 			return;
 		}
 
 		$handle = self::POST_TYPE . '-list-device';
 
-		wp_enqueue_script( $handle, SMS_GATEWAY_PRESS_URL . '/js/list-device.js' );
+		wp_enqueue_script( $handle, SMS_GATEWAY_PRESS_URL . '/js/list-device.js', array(), '1.0.0', true );
 
 		wp_localize_script(
 			$handle,
@@ -69,6 +69,10 @@ abstract class Device {
 	}
 
 	public static function on_save_post( int $post_id ): void {
+		if ( ! wp_verify_nonce( $_POST[ self::NONCE_ACTION_METABOX ], self::NONCE_ACTION_METABOX ) ) {
+			return;
+		}
+
 		if ( isset( $_POST[ self::META_KEY_TOKEN ] ) ) {
 			update_post_meta( $post_id, self::META_KEY_TOKEN, sanitize_text_field( $_POST[ self::META_KEY_TOKEN ] ) );
 		}
@@ -92,7 +96,7 @@ abstract class Device {
 	public static function get_status_badge( int $post_id ): ?string {
 		$post = get_post( $post_id );
 
-		if ( $post && self::POST_TYPE != $post->post_type ) {
+		if ( $post && self::POST_TYPE !== $post->post_type ) {
 			return null;
 		}
 
@@ -124,17 +128,17 @@ abstract class Device {
 	public static function manage_posts_custom_column( string $column, int $post_id ): void {
 		switch ( $column ) {
 			case self::META_KEY_LAST_ACTIVITY_AT:
-				echo Utils::format_elapsed_time( get_post_meta( $post_id, self::META_KEY_LAST_ACTIVITY_AT, true ) );
+				echo esc_html( Utils::format_elapsed_time( get_post_meta( $post_id, self::META_KEY_LAST_ACTIVITY_AT, true ) ) );
 				break;
 
 			case self::COLUMN_STATUS:
-				echo self::get_status_badge( $post_id );
+				echo esc_html( self::get_status_badge( $post_id ) );
 				break;
 		}
 	}
 
 	public static function register_meta_box(): void {
-		wp_enqueue_script( 'qrcode', SMS_GATEWAY_PRESS_URL . '/js/qrcode.min.js' );
+		wp_enqueue_script( 'qrcode', SMS_GATEWAY_PRESS_URL . '/js/qrcode.min.js', array(), '1.0.0', true );
 
 		add_meta_box(
 			'options',
@@ -144,9 +148,14 @@ abstract class Device {
 	}
 
 	public static function ajax_update_sms_gateway_press_device_form(): void {
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'update_sms_gateway_press_device_form' ) ) {
+			wp_send_json_error( null, 403 );
+			wp_die();
+		}
+
 		$post = get_post( $_POST['post_id'] );
 
-		if ( ! $post || self::POST_TYPE != $post->post_type ) {
+		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
 			die;
 		}
 
@@ -171,7 +180,7 @@ abstract class Device {
 		foreach ( $id_list as $post_id ) {
 			$post = get_post( $post_id );
 
-			if ( ! $post || self::POST_TYPE != $post->post_type ) {
+			if ( ! $post || self::POST_TYPE !== $post->post_type ) {
 				continue;
 			}
 
@@ -189,7 +198,10 @@ abstract class Device {
 		$post_id = get_the_ID();
 
 		$token = get_post_meta( $post_id, self::META_KEY_TOKEN, true );
-		$token = $token ?: bin2hex( random_bytes( 16 ) );
+
+		if ( ! $token ) {
+			$token = bin2hex( random_bytes( 16 ) );
+		}
 
 		?>
 			<script>
@@ -232,6 +244,7 @@ abstract class Device {
 				} );
 			</script>
 			<table class="form-table">
+				<?php wp_nonce_field( self::NONCE_ACTION_METABOX, self::NONCE_ACTION_METABOX ); ?>
 				<body>
 					<tr>
 						<th scope="row"><label for="<?php echo esc_attr( self::META_KEY_TOKEN ); ?>"><?php echo esc_html__( 'Token', 'sms_gateway_press' ); ?></label></th>
@@ -266,7 +279,7 @@ abstract class Device {
 					<tr>
 						<th scope="row"><label><?php echo esc_html__( 'QR Connector', 'sms_gateway_press' ); ?></label></th>
 						<td>
-							<?php if ( 'publish' == get_post_status( $post_id ) ) : ?>
+							<?php if ( 'publish' === get_post_status( $post_id ) ) : ?>
 								<p class="description"><?php echo esc_html__( 'Scan this QR from the Android app to connect this device.', 'sms_gateway_press' ); ?></p>
 								<br>
 								<div id="qrcode"></div>
@@ -275,22 +288,23 @@ abstract class Device {
 							<?php endif ?>
 						</td>
 					</tr>
-					<?php if ( 'publish' == get_post_status( $post_id ) ) : ?>
+					<?php if ( 'publish' === get_post_status( $post_id ) ) : ?>
 						<tr>
 							<th scope="row"><?php echo esc_html__( 'Last Activity', 'sms_gateway_press' ); ?></th>
-							<td id="last_activity"><?php echo Utils::format_elapsed_time( get_post_meta( $post_id, self::META_KEY_LAST_ACTIVITY_AT, true ) ); ?></td>
+							<td id="last_activity"><?php echo esc_html( Utils::format_elapsed_time( get_post_meta( $post_id, self::META_KEY_LAST_ACTIVITY_AT, true ) ) ); ?></td>
 						</tr>
 						<tr>
 							<th scope="row"><?php echo esc_html__( 'Status', 'sms_gateway_press' ); ?></th>
-							<td id="status_badge"><?php echo self::get_status_badge( $post_id ); ?></td>
+							<td id="status_badge"><?php echo esc_html( self::get_status_badge( $post_id ) ); ?></td>
 						</tr>
 						<script>
 							document.addEventListener( 'DOMContentLoaded', () => {
 								setInterval( () => {
-									const url = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
+									const url = '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>';
 
 									const requestBody = new FormData();
 									requestBody.set( 'action', 'update_sms_gateway_press_device_form' );
+									requestBody.set( 'nonce', '<?php echo esc_js( wp_create_nonce( 'update_sms_gateway_press_device_form' ) ); ?>' );
 									requestBody.set( 'post_id', <?php echo esc_js( $post_id ); ?> );
 
 									const options = {
