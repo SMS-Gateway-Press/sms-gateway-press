@@ -7,7 +7,7 @@ abstract class Utils {
 	public static function format_elapsed_time( $value ): ?string {
 		return is_numeric( $value ) && $value > 0 ?
 			sprintf( esc_html__( '%s ago', 'sms_gateway_press' ), human_time_diff( $value ) ) :
-			__( 'Unknow', 'sms_gateway_press' );
+			esc_html__( 'Unknow', 'sms_gateway_press' );
 	}
 
 	public static function format_remaining_time( $from, $to = 0 ) {

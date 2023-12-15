@@ -56,10 +56,7 @@
 		They are not intended as advice about which sniffs to exclude.
 		-->
 
-		<!--
-		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing"/>
-		<exclude name="Modernize.FunctionCalls.Dirname.Nested"/>
-		-->
+		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
 	</rule>
 
 	<!-- Let's also check that everything is properly documented. -->
