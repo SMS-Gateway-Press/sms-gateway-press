@@ -20,6 +20,8 @@
 	<exclude-pattern>/docroot/xmlrpc.php</exclude-pattern>
 	<exclude-pattern>/docroot/wp-content/plugins/*</exclude-pattern>
 
+	<exclude-pattern>/js/*</exclude-pattern>
+
 	<!-- Exclude the Composer Vendor directory. -->
 	<exclude-pattern>/vendor/*</exclude-pattern>
 

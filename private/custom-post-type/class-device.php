@@ -132,7 +132,7 @@ abstract class Device {
 				break;
 
 			case self::COLUMN_STATUS:
-				echo esc_html( self::get_status_badge( $post_id ) );
+				echo wp_kses( self::get_status_badge( $post_id ), array( 'span' => array( 'style' => array() ) ) );
 				break;
 		}
 	}
@@ -295,7 +295,7 @@ abstract class Device {
 						</tr>
 						<tr>
 							<th scope="row"><?php echo esc_html__( 'Status', 'sms_gateway_press' ); ?></th>
-							<td id="status_badge"><?php echo esc_html( self::get_status_badge( $post_id ) ); ?></td>
+							<td id="status_badge"><?php echo wp_kses( self::get_status_badge( $post_id ), array( 'span' => array( 'style' => array() ) ) ); ?></td>
 						</tr>
 						<script>
 							document.addEventListener( 'DOMContentLoaded', () => {

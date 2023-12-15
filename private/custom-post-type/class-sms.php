@@ -144,7 +144,7 @@ abstract class Sms {
 				break;
 
 			case self::COLUMN_STATUS:
-				echo esc_html( self::get_status_badge( $post_id ) );
+				echo wp_kses( self::get_status_badge( $post_id ), array( 'span' => array( 'style' => array() ) ) );
 				break;
 
 			case self::META_KEY_SEND_AT:
