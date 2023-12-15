@@ -55,7 +55,7 @@ abstract class Rest_Api {
 				'callback'            => array( __CLASS__, 'get_sms' ),
 				'args'                => array(
 					'id' => array(
-						'validate_callback' => function ( $param, $request, $key ) {
+						'validate_callback' => function ( $param ) {
 							return is_numeric( $param );
 						},
 					),
@@ -117,12 +117,14 @@ abstract class Rest_Api {
 		$device_post = get_post( $device_id );
 
 		if ( ! $device_post instanceof WP_Post ||
-			Device::POST_TYPE != $device_post->post_type
+			Device::POST_TYPE !== $device_post->post_type
 		) {
 			return false;
 		}
 
-		if ( $device_token != get_post_meta( $device_id, Device::META_KEY_TOKEN, true ) ) {
+		$token = get_post_meta( $device_id, Device::META_KEY_TOKEN, true );
+
+		if ( $device_token !== $token ) {
 			return false;
 		}
 
@@ -277,14 +279,14 @@ abstract class Rest_Api {
 		$sms_id   = $request->get_param( 'sms_id' );
 		$sms_post = get_post( $sms_id );
 
-		if ( ! $sms_post || Sms::POST_TYPE != $sms_post->post_type ) {
+		if ( ! $sms_post || Sms::POST_TYPE !== $sms_post->post_type ) {
 			wp_send_json_error( null, 404 );
 			wp_die();
 		}
 
 		$sms_token = get_post_meta( $sms_id, Sms::META_KEY_TOKEN, true );
 
-		if ( $sms_token != $request->get_param( 'sms_token' ) ) {
+		if ( $sms_token !== $request->get_param( 'sms_token' ) ) {
 			wp_send_json_error( null, 403 );
 			wp_die();
 		}
@@ -298,7 +300,7 @@ abstract class Rest_Api {
 			wp_die();
 		}
 
-		if ( 'true' == $request->get_param( 'confirmed' ) ) {
+		if ( 'true' === $request->get_param( 'confirmed' ) ) {
 			update_post_meta( $sms_id, Sms::META_KEY_CONFIRMED_AT, $now );
 			update_post_meta( $sms_id, Sms::META_KEY_INACTIVE_AT, $now + SMS::DEFAULT_INACTIVITY );
 
@@ -311,7 +313,7 @@ abstract class Rest_Api {
 			wp_die();
 		}
 
-		if ( 'true' == $request->get_param( 'sent' ) ) {
+		if ( 'true' === $request->get_param( 'sent' ) ) {
 			update_post_meta( $sms_id, Sms::META_KEY_SENT_AT, $now );
 			delete_post_meta( $device_id, Device::META_KEY_CURRENT_SMS_ID );
 
@@ -321,7 +323,7 @@ abstract class Rest_Api {
 			wp_die();
 		}
 
-		if ( 'true' == $request->get_param( 'delivered' ) ) {
+		if ( 'true' === $request->get_param( 'delivered' ) ) {
 			update_post_meta( $sms_id, Sms::META_KEY_DELIVERED_AT, $now );
 			delete_post_meta( $device_id, Device::META_KEY_CURRENT_SMS_ID );
 
