@@ -173,7 +173,17 @@ abstract class Sms {
 				break;
 
 			case self::META_KEY_DELIVERED_AT:
-				echo wp_kses( self::get_list_column_delivered_at( $post_id ), array( 'p' => array(), 'a' => array( 'href' => array(), 'target' => array() ) ) );
+				echo wp_kses(
+					self::get_list_column_delivered_at( $post_id ),
+					array(
+						'p' => array(),
+						'br' => array(),
+						'a' => array(
+							'href'   => array(),
+							'target' => array(),
+						),
+					)
+				);
 				break;
 		}
 	}
@@ -186,8 +196,12 @@ abstract class Sms {
 		}
 	}
 
-	public static function get_list_column_delivered_at( $post_id ) {
-		return __( '<p>This is a Premium feature. <a href="https://www.sms-gateway-press.com/premium/" target="_blank">Get it here</a>.</p>', 'sms-gateway-press' );
+	public static function get_list_column_delivered_at( /* $post_id */ ) {
+		return sprintf(
+			'<p>%s. <br> <a href="https://www.sms-gateway-press.com/premium/" target="_blank">%s</a>.</p>',
+			__( 'This is a Premium feature', 'sms-gateway-press' ),
+			__( 'Get it here', 'sms-gateway-press' ),
+		);
 	}
 
 	public static function get_status_badge( int $post_id ): string {
