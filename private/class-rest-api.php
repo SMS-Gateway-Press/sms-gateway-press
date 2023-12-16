@@ -323,16 +323,6 @@ abstract class Rest_Api {
 			wp_die();
 		}
 
-		if ( 'true' === $request->get_param( 'delivered' ) ) {
-			update_post_meta( $sms_id, Sms::META_KEY_DELIVERED_AT, $now );
-			delete_post_meta( $device_id, Device::META_KEY_CURRENT_SMS_ID );
-
-			Sms::add_log( $sms_id, 'Delivered.' );
-
-			wp_send_json_success();
-			wp_die();
-		}
-
 		wp_send_json_error( null, 400 );
 		wp_die();
 	}

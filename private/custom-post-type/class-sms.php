@@ -3,7 +3,6 @@
 namespace SMS_Gateway_Press\Custom_Post_Type;
 
 use DateTime;
-use WP_Post;
 use SMS_Gateway_Press\Main;
 
 abstract class Sms {
@@ -174,7 +173,7 @@ abstract class Sms {
 				break;
 
 			case self::META_KEY_DELIVERED_AT:
-				echo esc_html( self::get_list_column_delivered_at( $post_id ) );
+				echo wp_kses( self::get_list_column_delivered_at( $post_id ), array( 'p' => array(), 'a' => array( 'href' => array(), 'target' => array() ) ) );
 				break;
 		}
 	}
@@ -188,11 +187,7 @@ abstract class Sms {
 	}
 
 	public static function get_list_column_delivered_at( $post_id ) {
-		$delivered_at = get_post_meta( $post_id, self::META_KEY_DELIVERED_AT, true );
-
-		if ( $delivered_at ) {
-			return Utils::format_elapsed_time( $delivered_at );
-		}
+		return __( '<p>This is a Premium feature. <a href="https://www.sms-gateway-press.com/premium/" target="_blank">Get it here</a>.</p>', 'sms-gateway-press' );
 	}
 
 	public static function get_status_badge( int $post_id ): string {
