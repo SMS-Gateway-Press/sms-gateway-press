@@ -3,7 +3,7 @@
  * Plugin Name:  SMS Gateway Press
  * Plugin URI:   https://www.sms-gateway-press.com
  * Description:  Self-hosted SMS Gateway. Send SMS with your own Android devices across your WordPress site.
- * Version:      0.1.0
+ * Version:      1.0.0
  * Requires PHP: 7.0
  * Author:       Andy Daniel Navarro Taño
  * Author URI:   https://www.andaniel05.com
