@@ -10,6 +10,7 @@
  * License:      GPLv2
  * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:  sms_gateway_press
+ * Update URI:   https://www.sms-gateway-press.com/wp-json/sms-gateway-press-repo/v1/get-updates
  */
 
 require_once __DIR__ . '/private/class-main.php';
