@@ -87,12 +87,12 @@ abstract class Sms {
 	}
 
 	public static function ajax_update_sms_gateway_press_sms_list(): void {
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'update_sms_gateway_press_sms_list' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'update_sms_gateway_press_sms_list' ) ) {
 			wp_send_json_error( null, 403 );
 			wp_die();
 		}
 
-		$id_list = explode( ',', $_POST['id_list'] );
+		$id_list = explode( ',', sanitize_text_field( $_POST['id_list'] ) );
 		$result  = array();
 
 		foreach ( $id_list as $post_id ) {
@@ -264,7 +264,7 @@ abstract class Sms {
 	}
 
 	public static function on_save_post( int $post_id ): void {
-		if ( ! wp_verify_nonce( $_POST[ self::NONCE_ACTION_METABOX ], self::NONCE_ACTION_METABOX ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE_ACTION_METABOX ] ) ), self::NONCE_ACTION_METABOX ) ) {
 			return;
 		}
 
@@ -285,7 +285,7 @@ abstract class Sms {
 		}
 
 		if ( isset( $_POST[ self::META_KEY_EXPIRES_AT ] ) ) {
-			$expires_at_dt = DateTime::createFromFormat( Main::DATETIME_LOCAL_FORMAT, $_POST[ self::META_KEY_EXPIRES_AT ] );
+			$expires_at_dt = DateTime::createFromFormat( Main::DATETIME_LOCAL_FORMAT, sanitize_text_field( $_POST[ self::META_KEY_EXPIRES_AT ] ) );
 
 			if ( $expires_at_dt ) {
 				update_post_meta( $post_id, self::META_KEY_EXPIRES_AT, $expires_at_dt->getTimestamp() );

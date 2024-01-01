@@ -140,7 +140,7 @@ abstract class Rest_Api {
 	}
 
 	public static function get_device_actions( WP_REST_Request $request ): void {
-		$request_time       = $_SERVER['REQUEST_TIME'];
+		$request_time       = sanitize_text_field( $_SERVER['REQUEST_TIME'] );
 		$max_execution_time = ini_get( 'max_execution_time' );
 		$request_time_limit = $request_time + $max_execution_time;
 		$polling_time_limit = $request_time_limit - 2;

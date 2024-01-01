@@ -69,7 +69,7 @@ abstract class Device {
 	}
 
 	public static function on_save_post( int $post_id ): void {
-		if ( ! wp_verify_nonce( $_POST[ self::NONCE_ACTION_METABOX ], self::NONCE_ACTION_METABOX ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE_ACTION_METABOX ] ) ), self::NONCE_ACTION_METABOX ) ) {
 			return;
 		}
 
@@ -148,12 +148,12 @@ abstract class Device {
 	}
 
 	public static function ajax_update_sms_gateway_press_device_form(): void {
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'update_sms_gateway_press_device_form' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'update_sms_gateway_press_device_form' ) ) {
 			wp_send_json_error( null, 403 );
 			wp_die();
 		}
 
-		$post = get_post( $_POST['post_id'] );
+		$post = get_post( intval( sanitize_text_field( $_POST['post_id'] ) ) );
 
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
 			die;
@@ -169,7 +169,7 @@ abstract class Device {
 	}
 
 	public static function ajax_update_sms_gateway_press_device_list(): void {
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'update_sms_gateway_press_device_list' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'update_sms_gateway_press_device_list' ) ) {
 			wp_send_json_error( null, 403 );
 			wp_die();
 		}

@@ -12,6 +12,8 @@
  * Text Domain:  sms_gateway_press
  */
 
+ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 require_once __DIR__ . '/private/class-main.php';
 
 define( 'SMS_GATEWAY_PRESS_URL', plugin_dir_url( __FILE__ ) );
